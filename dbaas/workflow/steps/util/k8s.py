@@ -102,6 +102,7 @@ class UpdateHostMetadata(BaseK8SStep):
         self.instance.port = self.driver.default_port
         host = self.host
         host.address = self.instance.address
+        host.host_type = host.CONTAINER
         host.save()
 
     def undo(self):

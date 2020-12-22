@@ -14,8 +14,10 @@ from django.dispatch import receiver
 from django.utils.html import format_html
 from django.utils.module_loading import import_by_path
 from django.utils.translation import ugettext_lazy as _
+from django.utils.functional import cached_property
 from django_extensions.db.fields.encrypted import EncryptedCharField
 from slugify import slugify
+from k8s_client.client import K8sClient
 
 from drivers import DatabaseInfraStatus
 from physical.errors import (NoDiskOfferingGreaterError,
@@ -1153,7 +1155,48 @@ class DatabaseInfra(BaseModel):
         return True
 
 
+class SSHClient(object):
+    def __init__(self, host):
+        self.host = host
+    
+    @cached_property
+    def infra(self):
+        return self.host.instances.first().databaseinfra
+
+    @cached_property
+    def pool(self):
+        return self.infra.pool
+
+    @cached_property
+    def client(self):
+        if self.host.host_type == self.host.CONTAINER:
+            return K8sClient(
+                token=self.pool.rancher_token,
+                endpoint=self.pool.cluster_endpoint
+            )
+
+    def execute_remote_command(self, script):
+        from kubernetes.stream import stream
+        return stream(
+            self.client.connect_get_namespaced_pod_exec,
+            '{}-0'.format(self.host.hostname),
+            self.infra.name,
+            container="dbaas-container",
+            command=script,
+            stderr=True, stdin=False, stdout=True, tty=True,
+        )
+
+
 class Host(BaseModel):
+    VM = 0
+    CONTAINER = 1
+
+    HOST_TYPE = (
+        (VM, 'VM'),
+        (CONTAINER, 'Container'),
+    )
+
+    host_type = models.IntegerField(choices=HOST_TYPE, default=0)
     hostname = models.CharField(
         verbose_name=_("Hostname"), max_length=255, unique=True)
     address = models.CharField(verbose_name=_("Host address"), max_length=255)
@@ -1188,6 +1231,18 @@ class Host(BaseModel):
         permissions = (
             ("view_host", "Can view hosts"),
         )
+
+    @cached_property
+    def ssh(self):
+        return SSHClient(self)
+
+    @property
+    def is_container(self):
+        return self.host_type == self.CONTAINER
+
+    @property
+    def is_vm(self):
+        return self.host_type == self.VM
 
     def update_os_description(self, ):
         from util import get_host_os_description

@@ -154,15 +154,16 @@ class UpdateOpenSSlLib(SSL):
     def do(self):
         if not self.is_valid:
             return
-        script = """yum update -y openssl
-        local err=$?
-        if [ "$err" != "0" ];
-        then
-            yum clean all
-            yum update -y openssl
-        fi
-        """
-        self.exec_script(script)
+        if not self.host.is_container:
+            script = """yum update -y openssl
+            local err=$?
+            if [ "$err" != "0" ];
+            then
+                yum clean all
+                yum update -y openssl
+            fi
+            """
+            self.exec_script(script)
 
 
 class UpdateOpenSSlLibIfConfigured(UpdateOpenSSlLib, IfConguredSSLValidator):
@@ -196,8 +197,16 @@ class CreateSSLFolder(SSL):
     def do(self):
         if not self.is_valid:
             return
+
+        import ipdb; ipdb.set_trace()
         script = "mkdir -p {}".format(self.ssl_path)
-        self.exec_script(script)
+
+        if self.host.is_container:
+            self.host.ssh.execute_remote_command(
+                script.split(" ")
+            )
+        else:
+            self.exec_script(script)
 
     def undo(self):
         pass
@@ -205,6 +214,7 @@ class CreateSSLFolder(SSL):
 
 class CreateSSLFolderRollbackIfRunning(CreateSSLFolder):
     def undo(self):
+
         if self.vm_is_up(attempts=2):
             super(CreateSSLFolderRollbackIfRunning, self).undo()
 
@@ -320,10 +330,24 @@ EOF_SSL
 
         self.exec_script(script)
 
+    def create_ssl_config_file_for_container(self):
+        resp = self.host.ssh.execute_remote_command(
+            [
+                './${DBAAS_SSL_SCRIPTS_DIR}/create_ssl_config_file.sh',
+                self.ssl_dns,
+                self.host.address,
+                self.conf_file_path
+            ]
+        )
+        print resp
+
     def do(self):
         if not self.is_valid:
             return
-        self.create_ssl_config_file()
+        if self.host.is_container:
+            self.create_ssl_config_file_for_container()
+        else:
+            self.create_ssl_config_file()
 
 
 class CreateSSLConfForInstanceDNS(CreateSSLConfigFile,
