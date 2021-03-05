@@ -56,12 +56,14 @@ class Environment(BaseModel):
     AWS = 2
     KUBERNETES = 3
     GCP = 4
+    AZURE = 5
 
     PROVISIONER_CHOICES = (
         (CLOUDSTACK, 'Cloud Stack'),
         (AWS, 'AWS'),
         (KUBERNETES, 'Kubernetes'),
-        (GCP, 'GCP')
+        (GCP, 'GCP'),
+        (AZURE, 'Azure')
     )
 
     name = models.CharField(
@@ -1259,6 +1261,7 @@ class Instance(BaseModel):
     REDIS = 4
     REDIS_SENTINEL = 5
     MYSQL_PERCONA = 6
+    SQL_SERVER = 7
 
     DATABASE_TYPE = (
         (NONE, 'None'),
@@ -1268,6 +1271,7 @@ class Instance(BaseModel):
         (REDIS, 'Redis'),
         (REDIS_SENTINEL, 'Sentinel'),
         (MYSQL_PERCONA, 'MySQLPercona'),
+        (SQL_SERVER, 'SQL Server'),
     )
 
     dns = models.CharField(verbose_name=_("Instance dns"), max_length=200)
