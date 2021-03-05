@@ -19,11 +19,13 @@ class DriverFactory(object):
     @classmethod
     def get_driver_class(cls, driver_name):
         from drivers import (
-            base, fake, mongodb, mysqldb, redis, mysqlpercona, mongodb_k8s
+            base, fake, mongodb, mysqldb, redis, mysqlpercona, mongodb_k8s,
+            sqlserver
         )
 
         for module in [
-            fake, mongodb, mysqldb, redis, mysqlpercona, mongodb_k8s
+            fake, mongodb, mysqldb, redis, mysqlpercona, mongodb_k8s,
+            sqlserver
         ]:
             for name, klass in inspect.getmembers(module):
                 if not inspect.isclass(klass):
