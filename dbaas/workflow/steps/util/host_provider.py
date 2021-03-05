@@ -762,3 +762,64 @@ class WaitingNewDeployUndo(WaitingNewDeploy):
 
     def undo(self):
         self.execute()
+
+
+class CreateSQlServerInfra(CreateVirtualMachine):
+
+    def __unicode__(self):
+        return "Creating SQL Server infra..."
+
+    def do(self):
+        raise Exception('test')
+
+    def undo(self):
+        pass
+
+    '''
+    def do(self):
+        task_manager = self.create or self.destroy
+        if hasattr(self, 'step_manager') and task_manager is None:
+            task_manager = self.step_manager
+        try:
+            pair = self.infra.instances.get(dns=self.instance.dns)
+        except Instance.DoesNotExist:
+            host = self.provider.create_host(
+                self.infra, self.offering, self.vm_name, self.team, self.zone,
+                database_name=(self.database.name if self.database
+                               else task_manager.name),
+                static_ip=self.instance.static_ip
+            )
+            self.update_databaseinfra_last_vm_created()
+        else:
+            host = pair.hostname
+
+        self.create_instance(host)
+        self.associate_static_ip_with_instance()
+
+    def undo(self):
+        try:
+            host = self.instance.hostname
+        except ObjectDoesNotExist:
+            self.delete_instance()
+            return
+
+        try:
+            self.provider.destroy_host(self.host)
+        except (Host.DoesNotExist, IndexError):
+            pass
+        self.delete_instance()
+        if host.id:
+            host.delete()
+    '''
+
+
+class EmptyStep(HostProviderStep):
+
+    def __unicode__(self):
+        return "Empty Step, only for tests..."
+
+    def do(self):
+        pass
+
+    def undo(self):
+        pass
