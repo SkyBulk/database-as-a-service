@@ -836,7 +836,7 @@ class EmptyStep(HostProviderStep):
         return "Empty Step, only for tests..."
 
     def do(self):
-        raise Exception('test')
+        #raise Exception('test')
         pass
 
     def undo(self):
