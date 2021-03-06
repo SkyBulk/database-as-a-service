@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 from . import BaseDriver
+from util import get_credentials_for
+from dbaas_credentials.models import CredentialType
 
 
 class SQLServer(BaseDriver):
