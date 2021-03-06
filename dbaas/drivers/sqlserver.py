@@ -21,6 +21,21 @@ class SQLServer(BaseDriver):
         )
         return credential.user, credential.password, None
 
+    def create_database(self, database):
+        pass
+
+    def remove_database(self, database):
+        pass
+
+    def create_user(self, credential):
+        pass
+
+    def update_user(self, credential):
+        pass
+
+    def remove_user(self, credential):
+        pass
+
 class SQLServerAlwaysOn(SQLServer):
 
     @classmethod
