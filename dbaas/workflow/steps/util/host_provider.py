@@ -770,10 +770,27 @@ class CreateSQlServerInfra(CreateVirtualMachine):
         return "Creating SQL Server infra..."
 
     def do(self):
-        raise Exception('test')
+        host = Host()
+        host.hostname = '10.10.10.1'
+        host.address = '10.10.10.1'
+        host.user = 'sa'
+        host.password = 'sa'
+        host.provider = self.provider
+        host.identifier = '1111'
+        host.offering = self.offering
+        host.save()
+        self.create_instance(host)
 
     def undo(self):
-        pass
+        try:
+            host = self.instance.hostname
+        except ObjectDoesNotExist:
+            self.delete_instance()
+            return
+
+        self.delete_instance()
+        if host.id:
+            host.delete()
 
     '''
     def do(self):
@@ -819,6 +836,7 @@ class EmptyStep(HostProviderStep):
         return "Empty Step, only for tests..."
 
     def do(self):
+        raise Exception('test')
         pass
 
     def undo(self):
