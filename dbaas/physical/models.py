@@ -1308,7 +1308,8 @@ class Instance(BaseModel):
     @property
     def is_database(self):
         return self.instance_type in (
-            self.MYSQL, self.MONGODB, self.REDIS, self.MYSQL_PERCONA
+            self.MYSQL, self.MONGODB, self.REDIS, self.MYSQL_PERCONA,
+            self.SQL_SERVER
         )
 
     @property
