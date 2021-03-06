@@ -14,7 +14,7 @@ class SQLServerSingle(BaseSQLServer):
         return 'sqlserver_single'
 
     def deploy_instances(self):
-        return [[InstanceDeploy(Instance.SQL_SERVER, 1433)]]
+        return [[InstanceDeploy(Instance.SQLSERVER, 1433)]]
 
     def get_deploy_steps(self):
         return [

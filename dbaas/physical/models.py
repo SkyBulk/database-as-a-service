@@ -1261,7 +1261,7 @@ class Instance(BaseModel):
     REDIS = 4
     REDIS_SENTINEL = 5
     MYSQL_PERCONA = 6
-    SQL_SERVER = 7
+    SQLSERVER = 7
 
     DATABASE_TYPE = (
         (NONE, 'None'),
@@ -1271,7 +1271,7 @@ class Instance(BaseModel):
         (REDIS, 'Redis'),
         (REDIS_SENTINEL, 'Sentinel'),
         (MYSQL_PERCONA, 'MySQLPercona'),
-        (SQL_SERVER, 'SQL Server'),
+        (SQLSERVER, 'SQL Server'),
     )
 
     dns = models.CharField(verbose_name=_("Instance dns"), max_length=200)
@@ -1309,7 +1309,7 @@ class Instance(BaseModel):
     def is_database(self):
         return self.instance_type in (
             self.MYSQL, self.MONGODB, self.REDIS, self.MYSQL_PERCONA,
-            self.SQL_SERVER
+            self.SQLSERVER
         )
 
     @property
