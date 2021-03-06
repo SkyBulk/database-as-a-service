@@ -22,6 +22,9 @@ class SQLServerSingle(BaseSQLServer):
             'Creating SQL Server infra': (
                 'workflow.steps.util.host_provider.CreateSQlServerInfra',
             )}, {
+            'Creating Database': (
+                'workflow.steps.util.database.Create',
+            )}, {
             'Creating Empty Step': (
                 'workflow.steps.util.host_provider.EmptyStep',
             )}
