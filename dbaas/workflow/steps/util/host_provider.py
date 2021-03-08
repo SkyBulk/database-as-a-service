@@ -770,9 +770,11 @@ class CreateSQlServerInfra(CreateVirtualMachine):
         return "Creating SQL Server infra..."
 
     def do(self):
+        from random import randint
         host = Host()
-        host.hostname = '10.10.10.1'
-        host.address = '10.10.10.1'
+        host.address = '10.{}.{}.{}'.format(
+            randint(0, 256), randint(0, 256), randint(0, 256))
+        host.hostname= host.address
         host.user = 'sa'
         host.password = 'sa'
         host.provider = self.provider
