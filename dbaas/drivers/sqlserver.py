@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
 from . import BaseDriver
+import logging
 from util import get_credentials_for
 from dbaas_credentials.models import CredentialType
 
+LOG = logging.getLogger(__name__)
 
 class SQLServer(BaseDriver):
 
@@ -22,6 +24,7 @@ class SQLServer(BaseDriver):
         return credential.user, credential.password, None
 
     def create_database(self, database):
+        LOG.info("creating database %s" % database.name)
         pass
 
     def remove_database(self, database):

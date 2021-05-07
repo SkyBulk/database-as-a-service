@@ -19,13 +19,11 @@ class DriverFactory(object):
     @classmethod
     def get_driver_class(cls, driver_name):
         from drivers import (
-            base, fake, mongodb, mysqldb, redis, mysqlpercona, mongodb_k8s,
-            sqlserver
+            base, fake, mongodb, mysqldb, redis, mysqlpercona, mongodb_k8s, sqlserver
         )
 
         for module in [
-            fake, mongodb, mysqldb, redis, mysqlpercona, mongodb_k8s,
-            sqlserver
+            fake, mongodb, mysqldb, redis, mysqlpercona, mongodb_k8s, sqlserver
         ]:
             for name, klass in inspect.getmembers(module):
                 if not inspect.isclass(klass):
@@ -43,6 +41,5 @@ class DriverFactory(object):
     def factory(cls, databaseinfra):
         class_path = databaseinfra.plan.replication_topology.class_path
         driver_name = get_replication_topology_instance(class_path).driver_name
-
         driver_class = cls.get_driver_class(driver_name)
         return driver_class(databaseinfra=databaseinfra)

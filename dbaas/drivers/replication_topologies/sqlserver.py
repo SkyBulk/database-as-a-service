@@ -20,7 +20,7 @@ class SQLServerSingle(BaseSQLServer):
         return [
             {
             'Creating SQL Server infra': (
-                'workflow.steps.util.host_provider.CreateSQlServerInfra',
+                'workflow.steps.util.host_provider.CreateVirtualMachine',
             )}, {
             'Creating Database': (
                 'workflow.steps.util.database.Create',
@@ -29,6 +29,12 @@ class SQLServerSingle(BaseSQLServer):
                 'workflow.steps.util.host_provider.EmptyStep',
             )}
         ]
+
+    def get_destroy_steps(self):
+        pass
+    
+    def get_resize_steps(self):
+        pass
 
 class SQLServerAlwaysOn(BaseSQLServer):
 
