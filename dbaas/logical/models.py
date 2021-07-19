@@ -431,17 +431,10 @@ class Database(BaseModel):
             credential.endpoint, stream, search_field, self.name
         )
 
-    def __kibana_url(self):
-        from util import get_credentials_for
-        from dbaas_credentials.models import CredentialType
-
+    def log_kibana_url(self, credential):
         if self.databaseinfra.plan.is_pre_provisioned:
             return ""
 
-        credential = get_credentials_for(
-            environment=self.environment,
-            credential_type=CredentialType.KIBANA_LOG
-        )
         search_field = credential.get_parameter_by_name('search_field')
         if not search_field:
             return ""
@@ -453,11 +446,41 @@ class Database(BaseModel):
             credential.endpoint, time_query, filter_query
         )
 
+    def log_gcp_url(self, credential):
+        return credential.endpoint
+
+    def __get_log_credential(self):
+        from util import get_or_none_credentials_for
+        from dbaas_credentials.models import CredentialType
+
+        valid_credential_types = {
+            'kibana': CredentialType.KIBANA_LOG,
+            'gcp': CredentialType.GCP_LOG
+        }
+
+        for ct in valid_credential_types:
+            credential = get_or_none_credentials_for(
+                environment=self.environment,
+                credential_type=valid_credential_types[ct]
+            )
+
+            if credential is not None:
+                return ct, credential
+
+        return None, None
+
     def get_log_url(self):
         if Configuration.get_by_name_as_int('graylog_integration') == 1:
             return self.__graylog_url()
-        if Configuration.get_by_name_as_int('kibana_integration') == 1:
-            return self.__kibana_url()
+        if (Configuration.get_by_name_as_int('kibana_integration') == 1
+           or Configuration.get_by_name_as_int('gcp_log_integration') == 1):
+            log_type, credential = self.__get_log_credential()
+
+            if log_type:
+                url_log = getattr(self, "log_%s_url" % log_type)
+                return url_log(credential)
+
+            return ""
 
     def get_dex_url(self):
         if Configuration.get_by_name_as_int('dex_analyze') != 1:
