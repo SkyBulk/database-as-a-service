@@ -3,6 +3,8 @@ from __future__ import absolute_import, unicode_literals
 import simple_audit
 import logging
 import datetime
+from util import get_credentials_for
+from dbaas_credentials.models import CredentialType
 from datetime import date, timedelta
 from django.db import models, transaction, Error
 from django.db.models.signals import pre_save, post_save, pre_delete
@@ -30,6 +32,11 @@ LOG = logging.getLogger(__name__)
 KB_FACTOR = 1.0 / 1024.0
 MB_FACTOR = 1.0 / 1024.0 / 1024.0
 GB_FACTOR = 1.0 / 1024.0 / 1024.0 / 1024.0
+
+VALID_CREDENTIAL_TYPES = {
+    'kibana': CredentialType.KIBANA_LOG,
+    'gcp': CredentialType.GCP_LOG
+}
 
 
 class Project(BaseModel):
@@ -410,8 +417,6 @@ class Database(BaseModel):
         return self.driver.get_connection_dns_simple(database=self)
 
     def __graylog_url(self):
-        from util import get_credentials_for
-        from dbaas_credentials.models import CredentialType
 
         if self.databaseinfra.plan.is_pre_provisioned:
             return ""
@@ -453,15 +458,10 @@ class Database(BaseModel):
         from util import get_or_none_credentials_for
         from dbaas_credentials.models import CredentialType
 
-        valid_credential_types = {
-            'kibana': CredentialType.KIBANA_LOG,
-            'gcp': CredentialType.GCP_LOG
-        }
-
-        for ct in valid_credential_types:
+        for ct in VALID_CREDENTIAL_TYPES:
             credential = get_or_none_credentials_for(
                 environment=self.environment,
-                credential_type=valid_credential_types[ct]
+                credential_type=VALID_CREDENTIAL_TYPES[ct]
             )
 
             if credential is not None:

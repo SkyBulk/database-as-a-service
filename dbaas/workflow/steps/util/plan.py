@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
 from util import (build_context_script,
-                  get_credentials_for)
+                  get_credentials_for,
+                  get_or_none_credentials_for)
 from dbaas_credentials.models import CredentialType
 from base import BaseInstanceStep, BaseInstanceStepMigration
 from physical.configurations import configuration_factory
 from physical.models import Offering, Volume
+from logical.models import VALID_CREDENTIAL_TYPES
 from system.models import Configuration
 import logging
 
@@ -75,16 +77,21 @@ class PlanStep(BaseInstanceStep):
         return variables
 
     def get_log_endpoint(self):
+        credential = None
         if Configuration.get_by_name_as_int('graylog_integration') == 1:
             credential = get_credentials_for(
                 environment=self.environment,
                 credential_type=CredentialType.GRAYLOG
             )
-        elif Configuration.get_by_name_as_int('kibana_integration') == 1:
-            credential = get_credentials_for(
-                environment=self.environment,
-                credential_type=CredentialType.KIBANA_LOG
-            )
+        elif (Configuration.get_by_name_as_int('kibana_integration') == 1
+              or Configuration.get_by_name_as_int('gcp_log_integration') == 1):
+
+            for vc in VALID_CREDENTIAL_TYPES:
+                if credential is None:
+                    credential = get_or_none_credentials_for(
+                        environment=self.environment,
+                        credential_type=VALID_CREDENTIAL_TYPES[vc]
+                    )
         else:
             return ""
         return credential.get_parameter_by_name('endpoint_log')
