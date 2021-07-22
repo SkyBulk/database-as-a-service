@@ -3,6 +3,7 @@ from __future__ import absolute_import, unicode_literals
 import simple_audit
 import logging
 import datetime
+import urllib
 from util import get_credentials_for
 from dbaas_credentials.models import CredentialType
 from datetime import date, timedelta
@@ -452,7 +453,34 @@ class Database(BaseModel):
         )
 
     def log_gcp_url(self, credential):
-        return credential.endpoint
+        from workflow.steps.util.base import HostProviderClient
+        host_prov_client = HostProviderClient(self.environment)
+
+        instances = host_prov_client.get_vm_ids(self.infra.name)
+        storage_scope = urllib.quote_plus(
+         "storageScope=storage,projects/"
+         "%(project)s/locations/"
+         "global/buckets/%(bucket)s/views/_AllLogs;" % {
+             "bucket": credential.get_parameter_by_name("bucket"),
+             "project": credential.get_parameter_by_name("project")
+         })
+
+        search_filter = " OR ".join(
+            ['resource.labels.instance_id="%s"' % x for x in instances])
+        query = "query;query=%(search_filter)s;" % {
+            "search_filter": urllib.quote_plus(search_filter)
+        }
+
+        extra_param = (
+            ";summaryFields=:false:32:beginning;"
+            "lfeCustomFields=resource%252Flabels%252Finstance_id;")
+
+        return "%(endpoint)s/logs/%(query)s%(storageScope)s%(extraParam)s" % {
+            "endpoint": credential.endpoint,
+            "query": query,
+            "storageScope": storage_scope,
+            "extraParam": extra_param
+        }
 
     def __get_log_credential(self):
         from util import get_or_none_credentials_for

@@ -369,6 +369,22 @@ class HostProviderClient(object):
             )
         return self._credential
 
+    def get_vm_ids(self, group):
+        ''' this method get
+            IDs from cloud of all vms in
+            a group'''
+        api_host_url = '/{}/{}/host-ids/{}'.format(
+            self.credential.project,
+            self.env.name,
+            group
+        )
+        resp = self._request(
+            requests.get,
+            '{}{}'.format(self.credential.endpoint, api_host_url)
+        )
+        if resp.ok:
+            return resp.json().get("ids")
+
     def get_vm_by_host(self, host):
         api_host_url = '/{}/{}/host/{}'.format(
             self.credential.project,
