@@ -456,7 +456,7 @@ class Database(BaseModel):
         from workflow.steps.util.base import HostProviderClient
         host_prov_client = HostProviderClient(self.environment)
 
-        instances = host_prov_client.get_vm_ids(self.infra.name)
+        instances = host_prov_client.get_vm_names(self.infra.name)
         storage_scope = urllib.quote_plus(
          "storageScope=storage,projects/"
          "%(project)s/locations/"
@@ -466,7 +466,8 @@ class Database(BaseModel):
          })
 
         search_filter = " OR ".join(
-            ['resource.labels.instance_id="%s"' % x for x in instances])
+            ['labels."compute.googleapis.com/resource_name"="%s"' %
+             x for x in instances])
         query = "query;query=%(search_filter)s;" % {
             "search_filter": urllib.quote_plus(search_filter)
         }
